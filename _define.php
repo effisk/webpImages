@@ -17,7 +17,7 @@ if (isset($this) && is_object($this) && method_exists($this, 'registerModule') &
         'WebP images',                                              // Name
         'Generate and serve WebP versions of the blog images',      // Description
         'effisk',                                                   // Author
-        '1.0.4',                                                    // Version
+        '1.0.5',                                                    // Version
         [
             'requires'    => [['core', '2.36']],
             'permissions' => 'My',
