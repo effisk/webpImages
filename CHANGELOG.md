@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.0.4 (2026-11-18)
+
+- Existing `<picture>` elements (for example a theme's art-directed lead image with a mobile `<source>`) now get WebP too. In *picture* mode, a WebP `<source>` is added before each JPEG/PNG `<source>`, with the same `media` and `sizes`, and another one before the `<img>`. In *replace* mode their `srcset`s point to the WebP files.
+- A `<picture>` that already has a WebP `<source>` is left as it is. `class="no-webp"` or `data-no-webp` on the `<picture>` or its `<img>` also leaves it alone.
+
 ## 1.0.3 (2026-11-18)
 
 - First public release.
