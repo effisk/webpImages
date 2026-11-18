@@ -60,11 +60,15 @@ Once installed, Dotclear's plugin manager offers new versions automatically (fro
 | **replace** | `<img src="….webp" …>` | No new markup. All current browsers read WebP. |
 | **off** | No change | For servers that pick WebP themselves (see below). |
 
-Only `<img>` tags pointing into the blog's public folder (root-relative URLs, or absolute URLs on the blog's host) whose WebP copy exists are changed. These are never touched:
+Only `<img>` tags pointing into the blog's public folder (root-relative URLs, or absolute URLs on the blog's host) whose WebP copy exists are changed.
+
+Images already inside a `<picture>`, such as a theme's art-directed image with a mobile `<source>`, keep their markup. In *picture* mode they get a WebP `<source>` before each JPEG/PNG `<source>` (same `media` and `sizes`) and before the `<img>`. In *replace* mode their `srcset`s point to the WebP files. A `<picture>` that already has a WebP source is left alone.
+
+These are never touched:
 
 - `<meta>` tags and JSON-LD;
 - feeds and other non-HTML responses;
-- `<script>`, `<style>`, `<textarea>` and `<noscript>`, HTML comments and existing `<picture>` elements;
+- `<script>`, `<style>`, `<textarea>` and `<noscript>`, and HTML comments;
 - URLs with a query string.
 
 To leave an image alone, add `class="no-webp"` or a `data-no-webp` attribute to it.

@@ -21,7 +21,9 @@ namespace Dotclear\Plugin\webpImages;
  *
  * Modes:
  *  - picture: <picture><source type="image/webp" srcset="…"><img …original…></picture>
- *  - replace: the <img> src/srcset point to the .webp files (no new markup)
+ *    An existing <picture> keeps its markup and gets a WebP <source> before
+ *    each JPEG/PNG <source> (same media/sizes) and before its <img>.
+ *  - replace: src/srcset point to the .webp files (no new markup)
  *
  * Opt out per image with class="no-webp" or a data-no-webp attribute.
  *
@@ -78,7 +80,8 @@ class Rewriter
             return $html;
         }
 
-        // Leave alone: comments, scripts, styles, textareas, noscript and existing <picture>
+        // Leave alone: comments, scripts, styles, textareas and noscript.
+        // Existing <picture> elements get their own treatment (WebP sources added inside).
         $parts = preg_split(
             '#(<!--.*?-->|<script\b.*?</script\s*>|<style\b.*?</style\s*>|<textarea\b.*?</textarea\s*>|<noscript\b.*?</noscript\s*>|<picture\b.*?</picture\s*>)#is',
             $html,
@@ -91,7 +94,15 @@ class Rewriter
         }
 
         foreach ($parts as $i => $part) {
-            if ($i % 2 === 1 || stripos($part, '<img') === false) {
+            if (stripos($part, '<img') === false) {
+                continue;
+            }
+
+            if ($i % 2 === 1) {
+                if (stripos($part, '<picture') === 0) {
+                    $parts[$i] = $this->rewritePicture($part);
+                }
+
                 continue;
             }
 
@@ -105,71 +116,183 @@ class Rewriter
     }
 
     /**
+     * A standalone <img>.
+     *
      * @param   array<int, string>  $m
      */
     private function rewriteTag(array $m): string
     {
         $tag = $m[0];
 
-        if (preg_match('#\sdata-no-webp\b#i', $tag)) {
+        if (self::optedOut($tag)) {
             return $tag;
-        }
-
-        $class = self::attribute($tag, 'class');
-        if ($class !== null && preg_match('#(^|\s)no-webp(\s|$)#', $class)) {
-            return $tag;
-        }
-
-        $src    = self::attribute($tag, 'src');
-        $srcset = self::attribute($tag, 'srcset');
-
-        $webpSrc = $src !== null ? $this->webpUrl($src) : null;
-
-        $webpSrcset = null;
-        $allMapped  = true;
-        if ($srcset !== null && trim($srcset) !== '') {
-            $candidates = [];
-            foreach (self::splitSrcset($srcset) as [$url, $descriptor]) {
-                $webp = $this->webpUrl($url);
-                if ($webp === null) {
-                    $allMapped    = false;
-                    $candidates[] = trim($url . ' ' . $descriptor);
-                } else {
-                    $candidates[] = trim($webp . ' ' . $descriptor);
-                }
-            }
-            $webpSrcset = implode(', ', $candidates);
         }
 
         if ($this->mode === My::MODE_REPLACE) {
-            if ($webpSrc !== null) {
-                $tag = self::setAttribute($tag, 'src', $webpSrc);
-            }
-            if ($webpSrcset !== null) {
-                $tag = self::setAttribute($tag, 'srcset', $webpSrcset);
-            }
-
-            return $tag;
+            return $this->replaceInImg($tag);
         }
 
-        // picture mode: the <source> must only list WebP files
-        if ($srcset !== null && trim($srcset) !== '') {
-            if (!$allMapped) {
+        $source = $this->webpSourceForImg($tag);
+
+        return $source === null ? $tag : '<picture>' . $source . $tag . '</picture>';
+    }
+
+    /**
+     * An existing <picture> (e.g. a theme's art-directed image): add a WebP
+     * <source> before each JPEG/PNG <source>, and one for the <img> fallback.
+     */
+    private function rewritePicture(string $picture): string
+    {
+        // Already has WebP (or the theme handles it), or opted out: leave it
+        if (preg_match('#<source\b[^>]*\stype\s*=\s*["\']?image/webp#i', $picture) || self::optedOut((string) preg_replace('#>.*#s', '>', $picture))) {
+            return $picture;
+        }
+
+        if (!preg_match('#<img\b[^>]*>#i', $picture, $img) || self::optedOut($img[0])) {
+            return $picture;
+        }
+
+        if ($this->mode === My::MODE_REPLACE) {
+            $result = preg_replace_callback('#<source\b[^>]*>#i', function (array $m): string {
+                $tag = $m[0];
+                if (!self::isRasterSource($tag)) {
+                    return $tag;
+                }
+                $srcset = self::attribute($tag, 'srcset');
+                if ($srcset === null || ($mapped = $this->mapSrcset($srcset)) === null || !$mapped[1]) {
+                    return $tag;
+                }
+                $tag = self::setAttribute($tag, 'srcset', $mapped[0]);
+
+                return self::attribute($tag, 'type') !== null ? self::setAttribute($tag, 'type', 'image/webp') : $tag;
+            }, $picture);
+            $picture = is_string($result) ? $result : $picture;
+
+            return str_replace($img[0], $this->replaceInImg($img[0]), $picture);
+        }
+
+        // picture mode: a WebP twin before each JPEG/PNG <source>…
+        $result = preg_replace_callback('#<source\b[^>]*>#i', function (array $m): string {
+            $tag = $m[0];
+            if (!self::isRasterSource($tag)) {
                 return $tag;
             }
-            $sourceSrcset = (string) $webpSrcset;
-        } elseif ($webpSrc !== null) {
-            $sourceSrcset = $webpSrc;
-        } else {
-            return $tag;
+            $srcset = self::attribute($tag, 'srcset');
+            if ($srcset === null || ($mapped = $this->mapSrcset($srcset)) === null || !$mapped[1]) {
+                return $tag;
+            }
+
+            $twin = '<source type="image/webp" srcset="' . self::escape($mapped[0]) . '"';
+            foreach (['media', 'sizes', 'width', 'height'] as $attr) {
+                $value = self::attribute($tag, $attr);
+                if ($value !== null) {
+                    $twin .= ' ' . $attr . '="' . self::escape($value) . '"';
+                }
+            }
+
+            return $twin . '>' . $tag;
+        }, $picture);
+        $picture = is_string($result) ? $result : $picture;
+
+        // …and one for the <img> fallback, right before it
+        $source = $this->webpSourceForImg($img[0]);
+        if ($source !== null) {
+            $pos = strpos($picture, $img[0]);
+            if ($pos !== false) {
+                $picture = substr($picture, 0, $pos) . $source . substr($picture, $pos);
+            }
         }
 
-        $sizes  = self::attribute($tag, 'sizes');
-        $source = '<source type="image/webp" srcset="' . self::escape($sourceSrcset) . '"'
+        return $picture;
+    }
+
+    /**
+     * <source type="image/webp"> matching an <img> (srcset, or src), or null
+     * if any of its images has no WebP copy.
+     */
+    private function webpSourceForImg(string $tag): ?string
+    {
+        $src    = self::attribute($tag, 'src');
+        $srcset = self::attribute($tag, 'srcset');
+
+        if ($srcset !== null && trim($srcset) !== '') {
+            $mapped = $this->mapSrcset($srcset);
+            if ($mapped === null || !$mapped[1]) {
+                return null;
+            }
+            $sourceSrcset = $mapped[0];
+        } elseif ($src !== null && ($webpSrc = $this->webpUrl($src)) !== null) {
+            $sourceSrcset = $webpSrc;
+        } else {
+            return null;
+        }
+
+        $sizes = self::attribute($tag, 'sizes');
+
+        return '<source type="image/webp" srcset="' . self::escape($sourceSrcset) . '"'
             . ($sizes !== null ? ' sizes="' . self::escape($sizes) . '"' : '')
             . '>';
+    }
 
-        return '<picture>' . $source . $tag . '</picture>';
+    /**
+     * replace mode: point src and srcset candidates to their WebP copies.
+     */
+    private function replaceInImg(string $tag): string
+    {
+        $src = self::attribute($tag, 'src');
+        if ($src !== null && ($webpSrc = $this->webpUrl($src)) !== null) {
+            $tag = self::setAttribute($tag, 'src', $webpSrc);
+        }
+
+        $srcset = self::attribute($tag, 'srcset');
+        if ($srcset !== null && ($mapped = $this->mapSrcset($srcset)) !== null) {
+            $tag = self::setAttribute($tag, 'srcset', $mapped[0]);
+        }
+
+        return $tag;
+    }
+
+    /**
+     * Map every srcset candidate that has a WebP copy.
+     *
+     * @return array{0: string, 1: bool}|null  [new srcset, all candidates mapped], or null if empty
+     */
+    private function mapSrcset(string $srcset): ?array
+    {
+        $candidates = [];
+        $all        = true;
+        foreach (self::splitSrcset($srcset) as [$url, $descriptor]) {
+            $webp = $this->webpUrl($url);
+            if ($webp === null) {
+                $all          = false;
+                $candidates[] = trim($url . ' ' . $descriptor);
+            } else {
+                $candidates[] = trim($webp . ' ' . $descriptor);
+            }
+        }
+
+        return $candidates === [] ? null : [implode(', ', $candidates), $all];
+    }
+
+    /**
+     * A <source> with no type, or a JPEG/PNG type.
+     */
+    private static function isRasterSource(string $tag): bool
+    {
+        $type = self::attribute($tag, 'type');
+
+        return $type === null || in_array(strtolower(trim($type)), ['image/jpeg', 'image/jpg', 'image/png'], true);
+    }
+
+    private static function optedOut(string $tag): bool
+    {
+        if (preg_match('#\sdata-no-webp\b#i', $tag)) {
+            return true;
+        }
+
+        $class = self::attribute($tag, 'class');
+
+        return $class !== null && (bool) preg_match('#(^|\s)no-webp(\s|$)#', $class);
     }
 
     /**
