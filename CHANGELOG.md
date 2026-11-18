@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.0.5 (2026-11-18)
+
+- *Picture* mode: an image whose `srcset` has a WebP copy for only some of its sizes now gets WebP for those sizes; the others keep their JPEG/PNG in the WebP `<source>`. Before, one missing copy (a WebP bigger than its JPEG is not kept) left the whole image without WebP.
+
 ## 1.0.4 (2026-11-18)
 
 - Existing `<picture>` elements (for example a theme's art-directed lead image with a mobile `<source>`) now get WebP too. In *picture* mode, a WebP `<source>` is added before each JPEG/PNG `<source>`, with the same `media` and `sizes`, and another one before the `<img>`. In *replace* mode their `srcset`s point to the WebP files.

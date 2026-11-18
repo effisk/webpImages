@@ -178,7 +178,9 @@ class Rewriter
                 return $tag;
             }
             $srcset = self::attribute($tag, 'srcset');
-            if ($srcset === null || ($mapped = $this->mapSrcset($srcset)) === null || !$mapped[1]) {
+            // At least one WebP copy is enough: the sizes without one keep their JPEG/PNG
+            // in the WebP <source> (a browser that reads WebP reads those too)
+            if ($srcset === null || ($mapped = $this->mapSrcset($srcset)) === null || !$mapped[2]) {
                 return $tag;
             }
 
@@ -208,7 +210,9 @@ class Rewriter
 
     /**
      * <source type="image/webp"> matching an <img> (srcset, or src), or null
-     * if any of its images has no WebP copy.
+     * if none of its images has a WebP copy. Sizes without a copy keep their
+     * JPEG/PNG in the srcset (1.0.5: a WebP bigger than its JPEG is not kept,
+     * which used to leave the whole image without WebP).
      */
     private function webpSourceForImg(string $tag): ?string
     {
@@ -217,7 +221,7 @@ class Rewriter
 
         if ($srcset !== null && trim($srcset) !== '') {
             $mapped = $this->mapSrcset($srcset);
-            if ($mapped === null || !$mapped[1]) {
+            if ($mapped === null || !$mapped[2]) {
                 return null;
             }
             $sourceSrcset = $mapped[0];
@@ -255,23 +259,26 @@ class Rewriter
     /**
      * Map every srcset candidate that has a WebP copy.
      *
-     * @return array{0: string, 1: bool}|null  [new srcset, all candidates mapped], or null if empty
+     * @return array{0: string, 1: bool, 2: bool}|null  [new srcset, all candidates mapped,
+     *                                                  at least one mapped], or null if empty
      */
     private function mapSrcset(string $srcset): ?array
     {
         $candidates = [];
         $all        = true;
+        $any        = false;
         foreach (self::splitSrcset($srcset) as [$url, $descriptor]) {
             $webp = $this->webpUrl($url);
             if ($webp === null) {
                 $all          = false;
                 $candidates[] = trim($url . ' ' . $descriptor);
             } else {
+                $any          = true;
                 $candidates[] = trim($webp . ' ' . $descriptor);
             }
         }
 
-        return $candidates === [] ? null : [implode(', ', $candidates), $all];
+        return $candidates === [] ? null : [implode(', ', $candidates), $all, $any];
     }
 
     /**
