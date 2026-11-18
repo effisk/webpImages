@@ -1,0 +1,123 @@
+# Language: Français
+# Module: webpImages - 1.0.3
+msgid ""
+msgstr ""
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Project-Id-Version: webpImages 1.0.3\n"
+"Language: fr\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+
+msgid "WebP images"
+msgstr "Images WebP"
+
+msgid "Generate and serve WebP versions of the blog images"
+msgstr "Génère et sert des versions WebP des images du blog"
+
+msgid "Settings have been successfully updated."
+msgstr "Les réglages ont été mis à jour."
+
+msgid "This server has no WebP encoder (PHP GD with WebP, or Imagick)."
+msgstr "Ce serveur n'a pas d'encodeur WebP (PHP GD avec WebP, ou Imagick)."
+
+msgid "Converting… %1$s / %2$s files checked"
+msgstr "Conversion… %1$s / %2$s fichiers vérifiés"
+
+msgid "Finished: %1$s files checked."
+msgstr "Terminé : %1$s fichiers vérifiés."
+
+msgid "Stopped at %1$s / %2$s. Start again to resume."
+msgstr "Arrêté à %1$s / %2$s. Relancez pour reprendre."
+
+msgid "Error: %s"
+msgstr "Erreur : %s"
+
+msgid "WebP created"
+msgstr "WebP créés"
+
+msgid "already up to date"
+msgstr "déjà à jour"
+
+msgid "kept as JPEG/PNG (WebP not smaller)"
+msgstr "gardés en JPEG/PNG (WebP pas plus léger)"
+
+msgid "too large to convert"
+msgstr "trop grands pour être convertis"
+
+msgid "errors"
+msgstr "erreurs"
+
+msgid "skipped"
+msgstr "ignorés"
+
+msgid "Status"
+msgstr "État"
+
+msgid "This server has no WebP encoder: PHP GD must be built with WebP support, or the Imagick extension must support WEBP. Nothing can be converted until one is installed."
+msgstr "Ce serveur n'a pas d'encodeur WebP : PHP GD doit être compilé avec WebP, ou l'extension Imagick doit gérer le format WEBP. Aucune image ne peut être convertie tant que l'un des deux n'est pas installé."
+
+msgid "Encoder: %s"
+msgstr "Encodeur : %s"
+
+msgid "%s original JPEG/PNG images"
+msgstr "%s images JPEG/PNG originales"
+
+msgid "%s thumbnails"
+msgstr "%s miniatures"
+
+msgid "%s of them have a WebP copy"
+msgstr "%s ont une copie WebP"
+
+msgid "Those files weigh %1$s as JPEG/PNG and %2$s as WebP (%3$s%% smaller)"
+msgstr "Ces fichiers pèsent %1$s en JPEG/PNG et %2$s en WebP (%3$s %% de moins)"
+
+msgid "Wrap images in &lt;picture&gt; with a WebP source (the &lt;img&gt; keeps its JPEG/PNG for older browsers)"
+msgstr "Entourer les images d'un &lt;picture&gt; avec une source WebP (le &lt;img&gt; garde son JPEG/PNG pour les anciens navigateurs)"
+
+msgid "Point &lt;img&gt; src/srcset straight to the WebP file (no markup change; every current browser reads WebP)"
+msgstr "Faire pointer src/srcset du &lt;img&gt; directement vers le fichier WebP (aucun balisage ajouté ; tous les navigateurs actuels lisent le WebP)"
+
+msgid "Do not change pages (use this if the web server picks WebP itself, see README)"
+msgstr "Ne pas modifier les pages (si le serveur web choisit lui-même le WebP, voir le README)"
+
+msgid "Settings"
+msgstr "Réglages"
+
+msgid "Create a WebP copy of each JPEG/PNG uploaded to the media manager"
+msgstr "Créer une copie WebP de chaque JPEG/PNG envoyé dans le gestionnaire de médias"
+
+msgid "Also convert the media thumbnails (_t, _s, _m, _o, _sq…), which listings use"
+msgstr "Convertir aussi les miniatures (_t, _s, _m, _o, _sq…), utilisées par les listes de billets"
+
+msgid "WebP quality (1-100):"
+msgstr "Qualité WebP (1-100) :"
+
+msgid "80 is a good default for photos. A WebP copy that is not smaller than its original is not kept."
+msgstr "80 convient bien aux photos. Une copie WebP qui n'est pas plus légère que l'original n'est pas conservée."
+
+msgid "Serving the WebP files on the blog"
+msgstr "Diffusion des fichiers WebP sur le blog"
+
+msgid "Only images under the blog's public folder that have a WebP copy are changed. og:image, twitter:image and JSON-LD keep the JPEG. Add class=\"no-webp\" or data-no-webp to an image to leave it alone."
+msgstr "Seules les images du dossier public du blog qui ont une copie WebP sont modifiées. og:image, twitter:image et le JSON-LD gardent le JPEG. Ajoutez class=\"no-webp\" ou data-no-webp à une image pour qu'elle ne soit pas modifiée."
+
+msgid "Save"
+msgstr "Enregistrer"
+
+msgid "Convert existing images"
+msgstr "Convertir les images existantes"
+
+msgid "Goes through the whole public folder in small steps. Images that already have an up-to-date WebP copy are skipped, so it can be stopped and started again at any time."
+msgstr "Parcourt tout le dossier public par petites étapes. Les images qui ont déjà une copie WebP à jour sont ignorées : vous pouvez arrêter et relancer à tout moment."
+
+msgid "Re-create every WebP copy (after changing the quality)"
+msgstr "Recréer toutes les copies WebP (après un changement de qualité)"
+
+msgid "Start"
+msgstr "Lancer"
+
+msgid "Stop"
+msgstr "Arrêter"
+
+msgid "Files not converted"
+msgstr "Fichiers non convertis"
