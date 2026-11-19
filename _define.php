@@ -15,7 +15,7 @@
 if (isset($this) && is_object($this) && method_exists($this, 'registerModule') && isset($this->id) && is_string($this->id)) {
     $this->registerModule(
         'WebP images',                                              // Name
-        'Generate and serve WebP versions of the blog images',      // Description
+        'Generate and serve WebP versions of the blog images (developed with the help of AI)',      // Description
         'effisk',                                                   // Author
         '1.0.5',                                                    // Version
         [

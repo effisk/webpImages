@@ -14,7 +14,7 @@ declare(strict_types=1);
 use Dotclear\Helper\L10n;
 
 L10n::$locales['WebP images'] = 'Images WebP';
-L10n::$locales['Generate and serve WebP versions of the blog images'] = 'Génère et sert des versions WebP des images du blog';
+L10n::$locales['Generate and serve WebP versions of the blog images (developed with the help of AI)'] = 'Génère et sert des versions WebP des images du blog (développé avec l\'aide de l\'IA)';
 L10n::$locales['Settings have been successfully updated.'] = 'Les réglages ont été mis à jour.';
 L10n::$locales['This server has no WebP encoder (PHP GD with WebP, or Imagick).'] = 'Ce serveur n\'a pas d\'encodeur WebP (PHP GD avec WebP, ou Imagick).';
 L10n::$locales['Converting… %1$s / %2$s files checked'] = 'Conversion… %1$s / %2$s fichiers vérifiés';

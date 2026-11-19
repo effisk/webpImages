@@ -7,6 +7,8 @@ A [Dotclear](https://dotclear.org) plugin that creates WebP copies of your blog'
 
 On one blog with about 17,000 images and thumbnails, the WebP copies were 47% lighter than the JPEG/PNG originals overall.
 
+This plugin was developed with the help of AI.
+
 *Une description en français suit la version anglaise.*
 
 ## Features
@@ -131,6 +133,8 @@ The admin page uses Dotclear's usual locale files: `locales/<lang>/main.po`, wit
 ---
 
 ## En français
+
+*Ce plugin a été développé avec l'aide de l'IA.*
 
 **WebP images** crée une copie WebP de chaque image JPEG/PNG du blog, miniatures comprises, et fait charger ces copies par les navigateurs. Les balises og:image, twitter:image, le JSON-LD et les flux gardent les originaux.
 

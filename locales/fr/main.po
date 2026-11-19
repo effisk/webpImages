@@ -11,8 +11,8 @@ msgstr ""
 msgid "WebP images"
 msgstr "Images WebP"
 
-msgid "Generate and serve WebP versions of the blog images"
-msgstr "Génère et sert des versions WebP des images du blog"
+msgid "Generate and serve WebP versions of the blog images (developed with the help of AI)"
+msgstr "Génère et sert des versions WebP des images du blog (développé avec l'aide de l'IA)"
 
 msgid "Settings have been successfully updated."
 msgstr "Les réglages ont été mis à jour."
